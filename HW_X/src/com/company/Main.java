@@ -8,20 +8,21 @@ public class Main {
 
     private static void fizzbuzz() {
         boolean flag;
+        String output = "";
         for (int i = 0; i < 100; i++) {
             flag = false;
             if (i % 3 == 0) {
-                System.out.print("Fizz");
+                output = "Fizz";
                 flag = true;
             }
             if (i % 5 == 0) {
-                System.out.print("Buzz");
+                output = "Buzz";
                 flag = true;
             }
             if (!flag) {
-                System.out.print(i);
+                output = String.valueOf(i);
             }
-            System.out.println();
+            System.out.println(output);
         }
     }
 }
