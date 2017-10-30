@@ -7,9 +7,10 @@ public class Main {
     }
 
     private static void fizzbuzz() {
+        final int HIGHEST_FIZZBUZZ = 100
         boolean flag;
         String output = "";
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < HIGHEST_FIZZBUZZ; i++) {
             flag = false;
             if (i % 3 == 0) {
                 output = "Fizz";
