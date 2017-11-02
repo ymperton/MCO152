@@ -4,15 +4,11 @@ import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.time.LocalDateTime;
-import java.util.Calendar;
-import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 interface IClock {
     LocalDateTime now();
 }
-
 
 interface IMailer {
     void sendMail(String to, String subject, String message);
@@ -44,7 +40,7 @@ class MailTask extends TimerTask {
     }
 }
 
-class GoogleEmail implements IMailer {
+class GoogleEmailSend implements IMailer {
 
     @Override
     public void sendMail(String to, String subject, String message) {
@@ -111,6 +107,11 @@ class ClockMailer {
 public class Main {
 
     public static void main(String[] args) {
-	// write your code here
+        ReadMail rm = new ReadMail(new GoogleEmailReader());
+        ArrayList<Mail> emailList = rm.readMail("shtarkknight@gmail.com", "Bera64chos@a");
+
+        for (Mail mail : emailList) {
+            System.out.println(mail.toString() + "\n---------");
+        }
     }
 }
