@@ -1,33 +1,35 @@
 package com.company;
 
 import javax.mail.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Properties;
 
-interface IMailReader {
-    ArrayList<Mail> readMail(String user, String password);
+interface IReadMail {
+    ArrayList<EmailMessage> readMail(String user, String password);
 }
 
 public class ReadMail {
-    private IMailReader mail;
+    private IReadMail mail;
 
-    public ReadMail(IMailReader mail) {
+    public ReadMail(IReadMail mail) {
         this.mail = mail;
     }
 
-    public ArrayList<Mail> readMail(String user, String password) {
+    public ArrayList<EmailMessage> readMail(String user, String password) {
         return mail.readMail(user, password);
     }
 
 }
 
-class GoogleEmailReader implements IMailReader {
+class GoogleEmailReader implements IReadMail {
 
     @Override
-    public ArrayList<Mail> readMail(String user, String password) {
+    public ArrayList<EmailMessage> readMail(String user, String password) {
         String host = "pop.gmail.com";
 
-        ArrayList<Mail> emailList = new ArrayList<>();
+        ArrayList<EmailMessage> emailList = new ArrayList<>();
 
         try {
 
@@ -50,16 +52,18 @@ class GoogleEmailReader implements IMailReader {
             // retrieve the messages from the folder in an array and print it
             Message[] messages = emailFolder.getMessages();
 
-            String subject, from, text;
+            String subject, from, msg;
+            Date dateReceived;
 
             for (int i = 0, n = messages.length; i < n; i++) {
                 Message message = messages[i];
 
                 subject = message.getSubject();
                 from = message.getFrom()[0].toString();
-                text = message.getContent().toString();
+                msg = message.getContent().toString();
+                dateReceived = message.getReceivedDate();
 
-                emailList.add(new Mail(subject, from, text));
+                emailList.add(new EmailMessage(subject, from, user, msg, dateReceived));
             }
 
             //close the store and folder objects

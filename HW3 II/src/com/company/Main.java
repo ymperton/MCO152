@@ -108,9 +108,9 @@ public class Main {
 
     public static void main(String[] args) {
         ReadMail rm = new ReadMail(new GoogleEmailReader());
-        ArrayList<Mail> emailList = rm.readMail("shtarkknight@gmail.com", "Bera64chos@a");
+        ArrayList<EmailMessage> emailList = rm.readMail("shtarkknight@gmail.com", "Bera64chos@a");
 
-        for (Mail mail : emailList) {
+        for (EmailMessage mail : emailList) {
             System.out.println(mail.toString() + "\n---------");
         }
     }
