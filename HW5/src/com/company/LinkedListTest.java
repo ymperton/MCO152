@@ -14,8 +14,6 @@ import static org.junit.Assert.*;
 
 class LinkedListTest {
     List list;
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @BeforeEach
     public void create() {
@@ -150,12 +148,16 @@ class LinkedListTest {
         assertThat(list.get(1), is(equalTo("b")));
     }
 
-//    @Test
-//    public void TestGetOfIndexNotInListShouldReturnIndexOutOfBoundsError() {
-//        thrown.expect(IndexOutOfBoundsException.class);
-//        thrown.expectMessage("Index is out of bounds");
-//        list.get(10);
-//    }
+    @Test
+    public void TestGetOfIndexNotInListShouldReturnIndexOutOfBoundsError() {
+        try {
+            list.get(10);
+            fail();
+        } catch(IndexOutOfBoundsException e) {
+
+        }
+
+    }
 
     //Index Of
     @Test
@@ -219,12 +221,15 @@ class LinkedListTest {
         assertThat(list.indexOf("d"), is(equalTo(0)));
     }
 
-//    @Test
-//    public void TestSetOfIndexNotInListShouldReturnIndexOutOfBoundsError() {
-//        thrown.expect(IndexOutOfBoundsException.class);
-//        thrown.expectMessage("Index is out of bounds");
-//        list.set(12, "d");
-//    }
+    @Test
+    public void TestSetOfIndexNotInListShouldReturnIndexOutOfBoundsError() {
+        try {
+            list.set(12, "d");
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+
+        }
+    }
 
     //size
     @Test
