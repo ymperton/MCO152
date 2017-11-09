@@ -1,11 +1,9 @@
 package com.company;
 
-import org.junit.Before;
-import org.junit.Rule;
+//Edon Freiner & Yisroel Perton
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
-
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
