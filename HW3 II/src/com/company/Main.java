@@ -1,29 +1,21 @@
 package com.company;
 
+import org.apache.commons.net.ntp.NTPUDPClient;
+import org.apache.commons.net.ntp.TimeInfo;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.io.IOException;
+import java.net.InetAddress;
 import java.time.LocalDateTime;
-import java.util.Calendar;
-import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
-
-interface IClock {
-    LocalDateTime now();
-}
+import java.util.*;
 
 
 interface IMailer {
     void sendMail(String to, String subject, String message);
 }
 
-class RealClock implements IClock {
-    @Override
-    public LocalDateTime now() {
-        return LocalDateTime.now();
-    }
-}
 
 class MailTask extends TimerTask {
     private IMailer mail;
@@ -32,6 +24,7 @@ class MailTask extends TimerTask {
     public MailTask(IMailer mail) {
         this.mail = mail;
     }
+
     public void writeMail(String to, String subject, String message) {
         this.to = to;
         this.subject = subject;
@@ -110,7 +103,23 @@ class ClockMailer {
 
 public class Main {
 
-    public static void main(String[] args) {
-	// write your code here
+    public static void main(String[] args) throws IOException {
+        final String TIME_SERVER = "time-a-g.nist.gov";
+        NTPUDPClient timeClient = new NTPUDPClient();
+        InetAddress inetAddress = InetAddress.getByName(TIME_SERVER);
+
+        long computerTimeWhenSentSignal = System.currentTimeMillis();
+        TimeInfo timeInfo = timeClient.getTime(inetAddress);
+        long computerTimeWhenGotSignalBack = System.currentTimeMillis();
+
+        int timeLag = (int) (computerTimeWhenGotSignalBack - computerTimeWhenSentSignal) / 2;
+        long currentTimeInMilliseconds = timeInfo.getReturnTime();
+        Date dateTime = new Date(currentTimeInMilliseconds);
+        System.out.println(dateTime);
+        currentTimeInMilliseconds += timeLag;
+        dateTime = new Date(currentTimeInMilliseconds);
+        System.out.println(dateTime);
+        System.out.println("milliseconds: " + currentTimeInMilliseconds + " lag: " + timeLag);
+
     }
 }
