@@ -38,5 +38,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="hamcrest-junit-2.0.0.0-sources" level="project" />
+    <orderEntry type="library" name="infinitest-intellij-5.1.116" level="project" />
   </component>
 </module>
