@@ -1,115 +1,76 @@
 package com.company;
 
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import java.time.LocalDateTime;
-import java.util.Calendar;
-import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
-interface IClock {
-    LocalDateTime now();
-}
-
-interface IMailer {
-    void sendMail(String to, String subject, String message);
-}
-
-class RealClock implements IClock {
-    @Override
-    public LocalDateTime now() {
-        return LocalDateTime.now();
-    }
-}
-
-class MailTask extends TimerTask {
-    private IMailer mail;
-    private String to, subject, message;
-
-    public MailTask(IMailer mail) {
-        this.mail = mail;
-    }
-    public void writeMail(String to, String subject, String message) {
-        this.to = to;
-        this.subject = subject;
-        this.message = message;
-    }
-
-    @Override
-    public void run() {
-        mail.sendMail(to, subject, message);
-    }
-}
-
-class GoogleEmail implements IMailer {
-
-    @Override
-    public void sendMail(String to, String subject, String message) {
-        final String username = "shtarkknight@gmail.com";
-        final String password = "Bera64chos@a";
-
-        Properties props = new Properties();
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
-
-        Session session = Session.getInstance(props,
-                new javax.mail.Authenticator() {
-                    protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(username, password);
-                    }
-                });
-        try {
-            Message msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress("shtarkknight@gmail.com"));
-            msg.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(to));
-            msg.setSubject(subject);
-            msg.setText(message);
-
-            Transport.send(msg);
-
-            System.out.println("Done");
-
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-}
-
-class ClockMailer {
-    IClock clock;
-    MailTask mailTask;
-
-    public ClockMailer(IClock clock, IMailer mail) {
-        this.clock = clock;
-        mailTask = new MailTask(mail);
-    }
-
-    private LocalDateTime getNow() {
-        return clock.now();
-    }
-
-    public void writeMail(String to, String subject, String message) {
-        mailTask.writeMail("ymperton@gmail.com", "Hello", "Hello World!");
-    }
-
-    public void scheduleTask(Calendar dateTime) {
-
-        Timer timer = new Timer();
-
-        // Schedule to run at midnight
-        timer.schedule(mailTask,
-                dateTime.getTime());
-    }
-}
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 public class Main {
+    private static final Logger log = LogManager.getLogger(Main.class);
+    private static String username, password;
 
-    public static void main(String[] args) {
-	// write your code here
+    public static void main(String[] args) throws IOException {
+
+        String[] credentials = getCredentials();
+        username = credentials[0];
+        password = credentials[1];
+
+        ReadMail rm = new ReadMail(new GoogleEmailReader());
+        ArrayList<EmailMessage> listOfEmailsFromReceivalEmail = new ArrayList<>();
+
+        //read all emails from first email.
+        log.trace("Attempting to retrieve emails from email: " + username);
+        try {
+            listOfEmailsFromReceivalEmail = rm.readMail(username, password);
+            log.info("There are " + listOfEmailsFromReceivalEmail.size() + " emails.");
+        } catch (Exception e) {
+            String output = "";
+            for (StackTraceElement s : e.getStackTrace()) {
+                output += s + "\n";
+            }
+            log.error(output);
+        }
+
+        //send out all messages to second email.
+        log.trace("Now sending out all emails");
+        sendOutEmails(listOfEmailsFromReceivalEmail);
+    }
+
+    private static void sendOutEmails(ArrayList<EmailMessage> listOfEmailsFromReceivalEmail) {
+        SendMail mt = new SendMail(new GoogleEmailSender());
+        String emailToSendTo = "";
+        String defaultSubjectMessage = "Automatic Forward";
+
+        for (EmailMessage email : listOfEmailsFromReceivalEmail) {
+            log.trace("Attempting to send email:\n" + email.toString());
+            emailToSendTo = email.getSubject();
+            log.info("Sending it to " + emailToSendTo);
+            if (isEmail(emailToSendTo)) {
+                mt.sendMail(username, password, emailToSendTo, defaultSubjectMessage, email.getMessage());
+            }
+            log.trace(email);
+        }
+    }
+
+    private static boolean isEmail(String emailToSendTo) {
+        return (emailToSendTo.contains("@"));
+    }
+
+    public static String[] getCredentials() {
+        String[] credentials = new String[2];
+        Scanner fileScanner = null;
+        try {
+            fileScanner = new Scanner(new File("credentials.txt"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        credentials[0] = fileScanner.nextLine();
+        credentials[1] = fileScanner.nextLine();
+
+        return credentials;
     }
 }
