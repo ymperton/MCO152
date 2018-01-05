@@ -10,8 +10,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 import org.apache.log4j.*;
 
+import static com.company.Main.getCredentials;
+
 interface IMailer {
-    void sendMail(String to, String subject, String message);
+    void sendMail(String username, String password, String to, String subject, String message);
 }
 
 class SendMail {
@@ -22,19 +24,17 @@ class SendMail {
         this.mail = mail;
     }
 
-    public void sendMail(String to, String subject, String message) {
-        mail.sendMail(to, subject, message);
+    public void sendMail(String username, String password, String to, String subject, String message) {
+        mail.sendMail(username, password, to, subject, message);
     }
 }
 
 class GoogleEmailSender implements IMailer {
     private static Logger log = Logger.getLogger(String.valueOf(GoogleEmailSender.class));
     @Override
-    public void sendMail(String to, String subject, String message) {
+    public void sendMail(String username, String password, String to, String subject, String message) {
         log.info("Starting to send the message");
-        //the sending email
-        final String username = "pertonemailhomework@gmail.com";
-        final String password = "Berachos64a!@#4";
+
         log.trace("Sending it from email " + username);
 
         Properties props = new Properties();

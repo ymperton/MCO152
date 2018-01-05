@@ -1,13 +1,8 @@
 package com.company;
 
-
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-
 import javax.mail.*;
-import javax.mail.search.FlagTerm;
-import java.io.BufferedInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Properties;
@@ -26,7 +21,6 @@ public class ReadMail {
     public ArrayList<EmailMessage> readMail(String user, String password) {
         return mail.readMail(user, password);
     }
-
 }
 
 class GoogleEmailReader implements IReadMail {
@@ -47,16 +41,10 @@ class GoogleEmailReader implements IReadMail {
             properties.put("mail.pop3.host", host);
             properties.put("mail.pop3.port", "995");
             properties.put("mail.pop3.starttls.enable", "true");
-//
-//            properties.put("mail.smtp.host", host);
-//            properties.put("mail.smtp.socketFactory.port", "465");
-//            properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-//            properties.put("mail.smtp.auth", "true");
-//            properties.put(" mail.smtp.port", "465");
+
             Session emailSession = Session.getDefaultInstance(properties);
 
             //create the POP3 store object and connect with the pop server
-//            Store store = emailSession.getStore("imaps");
             Store store = emailSession.getStore("pop3s");
             store.connect(host, user, password);
 

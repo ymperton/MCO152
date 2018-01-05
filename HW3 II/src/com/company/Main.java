@@ -10,19 +10,21 @@ import java.util.*;
 
 public class Main {
     private static final Logger log = LogManager.getLogger(Main.class);
+    private static String username, password;
 
     public static void main(String[] args) throws IOException {
 
         String[] credentials = getCredentials();
-        String receivingUsername = credentials[0];
-        String receivingPassword = credentials[1];
+        username = credentials[0];
+        password = credentials[1];
+
         ReadMail rm = new ReadMail(new GoogleEmailReader());
         ArrayList<EmailMessage> listOfEmailsFromReceivalEmail = new ArrayList<>();
 
         //read all emails from first email.
-        log.trace("Attempting to retrieve emails from email: " + receivingUsername);
+        log.trace("Attempting to retrieve emails from email: " + username);
         try {
-            listOfEmailsFromReceivalEmail = rm.readMail(receivingUsername, receivingPassword);
+            listOfEmailsFromReceivalEmail = rm.readMail(username, password);
             log.info("There are " + listOfEmailsFromReceivalEmail.size() + " emails.");
         } catch (Exception e) {
             String output = "";
@@ -35,8 +37,6 @@ public class Main {
         //send out all messages to second email.
         log.trace("Now sending out all emails");
         sendOutEmails(listOfEmailsFromReceivalEmail);
-
-
     }
 
     private static void sendOutEmails(ArrayList<EmailMessage> listOfEmailsFromReceivalEmail) {
@@ -49,7 +49,7 @@ public class Main {
             emailToSendTo = email.getSubject();
             log.info("Sending it to " + emailToSendTo);
             if (isEmail(emailToSendTo)) {
-                mt.sendMail(emailToSendTo, defaultSubjectMessage, email.getMessage());
+                mt.sendMail(username, password, emailToSendTo, defaultSubjectMessage, email.getMessage());
             }
             log.trace(email);
         }
