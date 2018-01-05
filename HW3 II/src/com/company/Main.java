@@ -2,6 +2,8 @@ package com.company;
 
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -11,115 +13,55 @@ import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.util.*;
 
-
-interface IMailer {
-    void sendMail(String to, String subject, String message);
-}
-
-
-class MailTask extends TimerTask {
-    private IMailer mail;
-    private String to, subject, message;
-
-    public MailTask(IMailer mail) {
-        this.mail = mail;
-    }
-
-    public void writeMail(String to, String subject, String message) {
-        this.to = to;
-        this.subject = subject;
-        this.message = message;
-    }
-
-    @Override
-    public void run() {
-        mail.sendMail(to, subject, message);
-    }
-}
-
-class GoogleEmail implements IMailer {
-
-    @Override
-    public void sendMail(String to, String subject, String message) {
-        final String username = "shtarkknight@gmail.com";
-        final String password = "Bera64chos@a";
-
-        Properties props = new Properties();
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
-
-        Session session = Session.getInstance(props,
-                new javax.mail.Authenticator() {
-                    protected javax.mail.PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(username, password);
-                    }
-                });
-        try {
-            Message msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress("shtarkknight@gmail.com"));
-            msg.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse(to));
-            msg.setSubject(subject);
-            msg.setText(message);
-
-            Transport.send(msg);
-
-            System.out.println("Done");
-
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-}
-
-class ClockMailer {
-    IClock clock;
-    MailTask mailTask;
-
-    public ClockMailer(IClock clock, IMailer mail) {
-        this.clock = clock;
-        mailTask = new MailTask(mail);
-    }
-
-    private LocalDateTime getNow() {
-        return clock.now();
-    }
-
-    public void writeMail(String to, String subject, String message) {
-        mailTask.writeMail("ymperton@gmail.com", "Hello", "Hello World!");
-    }
-
-    public void scheduleTask(Calendar dateTime) {
-
-        Timer timer = new Timer();
-
-        // Schedule to run at midnight
-        timer.schedule(mailTask,
-                dateTime.getTime());
-    }
-}
-
 public class Main {
+    private static final Logger log = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) throws IOException {
-        final String TIME_SERVER = "time-a-g.nist.gov";
-        NTPUDPClient timeClient = new NTPUDPClient();
-        InetAddress inetAddress = InetAddress.getByName(TIME_SERVER);
 
-        long computerTimeWhenSentSignal = System.currentTimeMillis();
-        TimeInfo timeInfo = timeClient.getTime(inetAddress);
-        long computerTimeWhenGotSignalBack = System.currentTimeMillis();
+//        final String receivingUsername = "dependencyinjectionhw@gmail.com";
+//        final String receivingPassword = "Moshe123";
+        String receivingUsername = "pertonemailhomework@gmail.com";
+        String receivingPassword = "Berachos64a!@#4";
+        ReadMail rm = new ReadMail(new GoogleEmailReader());
+        ArrayList<EmailMessage> listOfEmailsFromReceivalEmail = new ArrayList<>();
 
-        int timeLag = (int) (computerTimeWhenGotSignalBack - computerTimeWhenSentSignal) / 2;
-        long currentTimeInMilliseconds = timeInfo.getReturnTime();
-        Date dateTime = new Date(currentTimeInMilliseconds);
-        System.out.println(dateTime);
-        currentTimeInMilliseconds += timeLag;
-        dateTime = new Date(currentTimeInMilliseconds);
-        System.out.println(dateTime);
-        System.out.println("milliseconds: " + currentTimeInMilliseconds + " lag: " + timeLag);
+        //read all emails from first email.
+        log.trace("Attempting to retrieve emails from email: " + receivingUsername);
+        try {
+            listOfEmailsFromReceivalEmail = rm.readMail(receivingUsername, receivingPassword);
+            log.info("There are " + listOfEmailsFromReceivalEmail.size() + " emails.");
+        } catch (Exception e) {
+            String output = "";
+            for (StackTraceElement s : e.getStackTrace()) {
+                output += s + "\n";
+            }
+            log.error(output);
+        }
 
+        //send out all messages to second email.
+        log.trace("Now sending out all emails");
+        sendOutEmails(listOfEmailsFromReceivalEmail);
+
+
+    }
+
+    private static void sendOutEmails(ArrayList<EmailMessage> listOfEmailsFromReceivalEmail) {
+        SendMail mt = new SendMail(new GoogleEmailSender());
+        String emailToSendTo = "";
+        String defaultSubjectMessage = "Automatic Forward";
+
+        for (EmailMessage email : listOfEmailsFromReceivalEmail) {
+            log.trace("Attempting to send email:\n" + email.toString());
+            emailToSendTo = email.getSubject();
+            log.info("Sending it to " + emailToSendTo);
+            if (isEmail(emailToSendTo)) {
+                mt.sendMail(emailToSendTo, defaultSubjectMessage, email.getMessage());
+            }
+            log.trace(email);
+        }
+    }
+
+    private static boolean isEmail(String emailToSendTo) {
+        return (emailToSendTo.contains("@"));
     }
 }
